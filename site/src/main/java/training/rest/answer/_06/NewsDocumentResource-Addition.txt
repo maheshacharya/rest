@@ -1,0 +1,37 @@
+/*
+ * Copyright 2016 Hippo B.V. (http://www.onehippo.com)
+ * Usage is prohibited except for people attending a training given or authorised by Hippo B.V., and only for that purpose.
+ */
+
+// These are the additional import statements
+
+import javax.ws.rs.NotFoundException;
+import org.hippoecm.hst.container.RequestContextProvider;
+import org.hippoecm.hst.content.beans.ObjectBeanManagerException;
+import org.hippoecm.hst.content.beans.standard.HippoFolderBean;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+
+// This is the log statement (a class level property)
+
+    private static Logger log = LoggerFactory.getLogger(NewsDocumentResource.class);
+
+
+// This is the new method
+
+    @GET
+    @Path("/item/{itempath: .+}")
+    public NewsDocument page(@PathParam("itempath") String itempath) {
+        try {
+            final HippoFolderBean mountContentBaseBean = getMountContentBaseBean(RequestContextProvider.get());
+            NewsDocument newsDocument = mountContentBaseBean.getBean(itempath, NewsDocument.class);
+            if (newsDocument == null) {
+                throw new NotFoundException();
+            }
+            return newsDocument;
+        } catch (ObjectBeanManagerException e) {
+            log.error("Error retrieving mount content base bean", e);
+        }
+        return null;
+    }

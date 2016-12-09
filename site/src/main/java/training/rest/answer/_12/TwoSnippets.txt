@@ -1,0 +1,33 @@
+/*
+ * Copyright 2016 Hippo B.V. (http://www.onehippo.com)
+ * Usage is prohibited except for people attending a training given or authorised by Hippo B.V., and only for that purpose.
+ */
+
+
+The updated method of the NewsDocumentContentResource looks like this:
+
+@GET
+@Path("/content/")
+public HippoHtmlRepresentation getHippoHtmlRepresentation(@Context HttpServletRequest servletRequest) {
+    return getHippoHtmlRepresentation(servletRequest, "myhippoproject:content", "rest");
+}
+
+
+
+The updated Spring Bean configuration looks like this:
+
+  <bean id="customRestContentResourceProviders" class="org.springframework.beans.factory.config.ListFactoryBean">
+    <property name="sourceList">
+      <list>
+        <bean class="org.apache.cxf.jaxrs.lifecycle.SingletonResourceProvider">
+          <constructor-arg>
+            <bean class="org.example.rest.NewsDocumentContentResource" >
+              <property name="contentRewriter" ref="restContentRewriter"/>
+            </bean>
+          </constructor-arg>
+        </bean>
+      </list>
+    </property>
+  </bean>
+
+  <bean id="restContentRewriter" class="org.example.rest.rewriter.RestContentRewriter"/>

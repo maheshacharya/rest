@@ -1,0 +1,57 @@
+/*
+ * Copyright 2016 Hippo B.V. (http://www.onehippo.com)
+ * Usage is prohibited except for people attending a training given or authorised by Hippo B.V., and only for that purpose.
+ */
+
+
+    public NewsDocument create(@Context HttpServletRequest request, final NewsDocument incomingBean) {
+        NewsDocument createDocument = null;
+        final HstRequestContext requestContext = getRequestContext(request);
+
+        try {
+            final WorkflowPersistenceManager wpm = getWorkflowPersistenceManager(requestContext.getSession());
+            wpm.setWorkflowCallbackHandler(REQUEST_PUBLICATION_CALLBACK_HANDLER);
+
+            final String createDocumentPath = createNewNode(getRequestContext(request), wpm, incomingBean.getTitle());
+
+            createDocument = (NewsDocument) wpm.getObject(createDocumentPath);
+
+            if (createDocument != null) {
+                wpm.update(createDocument);
+            } else {
+                log.error("Failed to add news for path: {}", createDocumentPath);
+                try {
+                    wpm.refresh();
+                } catch (ObjectBeanPersistenceException obpe) {
+                    log.warn("Failed to refresh: " + obpe.getMessage(), obpe);
+                }
+            }
+
+        } catch (Exception e) {
+            log.warn("Failed to create event", e);
+        }
+        return createDocument;
+
+    }
+
+    private String createNewNode(HstRequestContext context, WorkflowPersistenceManager wpm, final String newNodeName) throws ObjectBeanPersistenceException {
+        final String newsFolderPath = createNewsFolderPath(context);
+        return wpm.createAndReturn(newsFolderPath, NewsDocument.DOCUMENT_TYPE, newNodeName, true);
+    }
+
+    private String createNewsFolderPath(final HstRequestContext context) {
+        return context.getResolvedMount().getMount().getContentPath() + "/news/restimport";
+    }
+
+    private WorkflowPersistenceManager getWorkflowPersistenceManager(Session session) {
+        return new WorkflowPersistenceManagerImpl(session, RequestContextProvider.get().getContentBeansTool().getObjectConverter());
+    }
+
+    private static final QualifiedWorkflowCallbackHandler<DocumentWorkflow> REQUEST_PUBLICATION_CALLBACK_HANDLER = new RequestPublicationCallbackHandler();
+
+    private static class RequestPublicationCallbackHandler extends BaseWorkflowCallbackHandler<DocumentWorkflow> {
+        @Override
+        public void processWorkflow(DocumentWorkflow workflow) throws RemoteException, RepositoryException, WorkflowException {
+            workflow.requestPublication();
+        }
+    }

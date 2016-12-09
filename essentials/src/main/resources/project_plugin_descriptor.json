@@ -1,0 +1,35 @@
+{
+  "items": [
+    {
+      "@type": "plugin",
+      "id": "trainingRestPlugin",
+      "name": "Training Rest Module",
+      "icon": "http://www.onehippo.org/binaries/content/gallery/training/training-feature.png",
+      "introduction": "Trainees of the Rest Module will install this feature. Example artifacts are installed in the project that are necessary to do the exercises.",
+      "packageFile": "/META-INF/training_rest_instructions.xml",
+      "parameterServiceClass": "org.onehippo.cms7.training.essentials.rest.RestParameterService",
+      "restClasses": [],
+      "type": "feature",
+      "vendor": {
+        "@type": "vendor",
+        "name": "Hippo",
+        "url": "http://www.onehippo.com"
+      },
+      "libraries": [
+        {
+          "items": []
+        }
+      ],
+      "dependencies": [
+        {
+          "@type": "dependency",
+          "groupId": "org.onehippo.cms7.training.essentials",
+          "artifactId": "rest-feature",
+          "scope": "compile",
+          "targetPom": "essentials",
+          "version": "1.0.2"
+        }
+      ]
+    }
+  ]
+}
